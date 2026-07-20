@@ -5,6 +5,7 @@ import dev.portfolio.notification.domain.NodeType
 import dev.portfolio.notification.domain.defaultEdges
 import dev.portfolio.notification.graph.core.BfsPathFinder
 import dev.portfolio.notification.graph.core.Edge
+import dev.portfolio.notification.graph.core.UnreachableDestinationsException
 import dev.portfolio.notification.support.TestGraph
 import io.kotest.assertions.throwables.shouldThrow
 import io.kotest.core.spec.style.StringSpec
@@ -53,6 +54,18 @@ class BfsPathFinderTest : StringSpec({
         val repo = NodeRepository(TestGraph.data)
         val pf = BfsPathFinder(defaultEdges(repo).filterNot { it.to() == NodeType.CARRIER })
         shouldThrow<IllegalArgumentException> { pf.findPath(listOf(NodeType.ORDER, NodeType.CARRIER)) }
+    }
+
+    // The finder reports the fact as data, not only as a message: callers decide policy on from/unreachable
+    // without parsing the string.
+    "unreachable is reported as a typed fact" {
+        val repo = NodeRepository(TestGraph.data)
+        val pf = BfsPathFinder(defaultEdges(repo).filterNot { it.to() == NodeType.CARRIER })
+        val ex = shouldThrow<UnreachableDestinationsException> {
+            pf.findPath(listOf(NodeType.ORDER, NodeType.CUSTOMER, NodeType.CARRIER))
+        }
+        ex.from shouldBe NodeType.ORDER
+        ex.unreachable shouldBe setOf(NodeType.CARRIER)
     }
 
     "greedy uses fewer chains than per-target when a target lies on another's path" {

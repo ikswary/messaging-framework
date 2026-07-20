@@ -19,7 +19,11 @@ open class BfsPathFinder<KEY>(edges: Collection<Edge<KEY>>) : PathFinder<KEY> {
 
         val chainTo = bfsChains(start, rest)
         val unreachable = rest - chainTo.keys
-        require(unreachable.isEmpty()) { "Unreachable from $start: $unreachable" }
+        // Typed, not require(): the caller has to tell "this spec asks for something the graph cannot reach"
+        // apart from a wiring bug, and a bare IllegalArgumentException does not carry that distinction.
+        if (unreachable.isNotEmpty()) {
+            throw UnreachableDestinationsException(start, unreachable, "Unreachable from $start: $unreachable")
+        }
         return coverApprox(targets, rest, chainTo)
     }
 
