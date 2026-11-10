@@ -1,0 +1,20 @@
+# Gradle / build outputs
+.gradle/
+**/.gradle/
+build/
+**/build/
+
+# Internal notes (공개 제외 — `_` 접두)
+_*
+**/_*
+ARCHITECTURE.md
+
+# OMC / Claude
+.omc/
+.claude/
+
+# IDE / OS
+.idea/
+*.iml
+.DS_Store
+Thumbs.db
